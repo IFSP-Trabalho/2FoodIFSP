@@ -20,7 +20,7 @@ const email = ref('');
 const password = ref('');
 const loading = ref(false);
 const backgroundImage = new URL('../../../../img/auth.png', import.meta.url).href;
-const brandLogo = new URL('../../../../img/2Food-removebg-preview.ico', import.meta.url).href;
+const brandLogo = new URL('../../../../img/4Food.ico', import.meta.url).href;
 const loginLogs = ref([]);
 const logTimeouts = new Map();
 const LOG_DURATION_MS = 5000;
@@ -146,7 +146,7 @@ async function handleLogin() {
 
         <section class="w-full max-w-[360px] rounded-2xl bg-[#191e26]/95 border border-white/10 shadow-2xl px-7 py-8 sm:ml-8 md:ml-10">
             <div class="mb-8 flex justify-center">
-                <img :src="brandLogo" alt="2Food" class="h-14 w-auto object-contain">
+                <img :src="brandLogo" alt="4Food" class="h-20 w-auto object-contain">
             </div>
 
             <h1 class="text-3xl font-semibold leading-tight mb-1">Entrar</h1>
