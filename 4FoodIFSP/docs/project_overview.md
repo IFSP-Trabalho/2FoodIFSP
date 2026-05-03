@@ -1,190 +1,332 @@
-Preciso criar um site onde ficará hospedado no site próprio do lovable com as seguintes referências.
+# Restaurant Management System — Project Overview (Técnico)
+
+> Versão: 2.0 — Atualizado com módulo WhatsApp, Garçom e delivery tracking  
+> Stack base: Laravel (PHP), frontend framework a definir (Livewire / Inertia + Vue ou React), MySQL/PostgreSQL
+
+---
+
+## 1. Visão Geral
+
+Sistema de gestão de restaurante multi-departamento com controle de acesso baseado em funções (RBAC). O sistema opera em duas superfícies principais: um **painel de gestão web** (usado por funcionários e admin) e uma **interface de tablet** (usada pelo cliente para registrar pedidos presenciais). O sistema possui ainda um **subdomínio de delivery** onde o cliente pode acompanhar o status do pedido e realizar avaliações.
+
+O produto é concebido como um SaaS, permitindo que restaurantes contratem módulos opcionais — especialmente o módulo de integração com WhatsApp.
+
+---
+
+## 2. Stack Tecnológica
 
 
-Ideias para o sistema de restaurante trabalho do IFSP
-
-Um sistema de gestão de restaurante feito usando PHP/Laravel
-O sistema deve ter para os usuários que vão usar o sistema um gerenciador de departamentos e esse departamentos vão ser ter visualização apenas para algumas telas e quem define qual usuário consegue logar e visualizar? -- O sistema utilizará controle de acesso baseado em funções (RBAC), onde o administrador é responsável por criar usuários e vinculá-los a departamentos específicos, determinando assim quais telas e funcionalidades cada usuário pode acessar.
-	
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Gerenciamento feito pelo admin
-
-- Consegue ver todos os departamentos e todas as telas dos departamentos (Acesso total)
-- Deve criar e registrar usuários dentro da plataforma (esses usuários vão ser os funcionários do restaurante)
-
-Gerenciamento da cozinha
-
-- Visualiza o pedido dos pratos
-- Deve mudar o status do pedido
-- Visualiza todos os históricos de pedido
-
-O projeto é grande deve ter um sistema de tablet para o cliente conseguir fazer o pedido e esse pedido só vai ser registrado para o departamento da cozinha, a cozinha registra o status do pedido e de forma inicial deve estar como "Em execução"
-
-Os pedidos devem aparecer de forma simplificada para quem gerencia o restaurante, deve conter uma UIX simples para apenas mudar o status dos pedidos
+| Camada                    | Tecnologia                                      |
+| ------------------------- | ----------------------------------------------- |
+| Backend                   | Laravel (PHP 8.x)                               |
+| Frontend (painel)         | Vue/React                                       |
+| Frontend (tablet/cliente) | Blade                                           |
+| Banco de dados            | MySQL                                           |
+| Fila de jobs              | Laravel Queue (Redis ou database driver)        |
+| Real-time / WebSocket     | Laravel Broadcasting + Pusher ou Laravel Reverb |
+| Autenticação              | Laravel Breeze / Sanctum                        |
+| Storage de arquivos       | Laravel Storage (local ou S3-compatible)        |
+| Integração WhatsApp       | API third-party (Z-API, Twilio)                 |
 
 
-Gerenciamento do financeiro
+---
 
-O financeiro é um outro departamento que consegue ver algumas métricas do sistema
-- Total de pedido
-- Pedidos Em andamento
-- Ganhos
-- Despesas
---- SE FALTAR MÉTRICA POSSO COLOCAR AQUI
+## 3. Módulos e Domínios do Sistema
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+### 3.1 Autenticação e RBAC
 
-FLUXO DE TELA (PROTÓTIPO)
+- Login via **username + password** (sem registro público — apenas admin cria contas)
+- Roles: `admin`, `kitchen`, `finance`, `waiter`, `whatsapp_agent`
+- Middleware de rota por role
+- First-login flow: ao primeiro acesso, o usuário é redirecionado para redefinição obrigatória de senha
+- O admin possui credenciais pré-seeded via `DatabaseSeeder`
 
-TELA DE LOGIN
-O login só vai ter nome e senha quem cria o login? (O administrador consegue criar o login para o funcionário) -> o admin já deve ter um login pronto
+**Entities:** `users`, `roles`, `departments`, `user_department` (pivot)
 
+---
 
-TELA DE INICIO 
-Tela de dashboard muda dependendo do departamento do usuário
-Cozinha
--- Total de pedidos em preparo
--- Últimos pedidos
--- Tempo médio de preparo
+### 3.2 Módulo de Pedidos (Orders)
 
-Financeiro
--- Total de pedidos em preparo
--- Últimos pedidos
--- Tempo médio de preparo
+Núcleo do sistema. Um pedido (`order`) é criado pelo tablet do cliente ou pelo app de delivery e contém:
 
-Administrador 
-Resumo de todos os departamento (dash)
+- `table_id` — referência à mesa (tablet N = mesa N)
+- `origin` — enum: `table` | `delivery`
+- `status` — enum: `pending` | `in_progress` | `ready` | `cancelled`
+- `paid` — boolean (false por padrão)
+- `items[]` — relação com `order_items` (prato, quantidade, observação)
 
-TELA DE PEDIDOS	-> só o departamento cozinha e usuários no departamento consegue ver
-Mostra os pedidos registrados pelo tablet na hora de fazer o pedido
-Nesta tela a cozinha consegue registrar status dos pedidos e vão ter 2 tipos de visualização PEDIDOS EM PREPARO E HISTÓRICO DE PEDIDOS
+**Fluxo de status:**
 
-Pedidos em preparo vai ser todos os pedidos que estão com o status que estão em preparo, quando essa condição mudar some da página de preparo e parte para a página de histórico dos pedidos
+```
+pending → in_progress → ready
+                      → cancelled
+```
 
-Em histórico de pedido deve ter um filtro dos dias que foram feitos os pedidos, exemplo: data inicio 17/03/2026 -> data final 20/03/2026 deve pegar apenas os pedidos desses dias
+- Pedidos com `status = in_progress` aparecem na tela "Pedidos em preparo" da cozinha
+- Pedidos com `status = ready | cancelled` aparecem no histórico
+- Pedidos com `paid = false` compõem o total em aberto de uma mesa
 
-Vão ter 3 status importante 
-EM PREPARO -> aparece na tela de pedidos em preparo
-PRONTO -> aparece no histórico de pedido quando o status do preparo mudar
-CANCELADO -> aparece no histórico de pedido quando o status do preparo mudar
+**Broadcast:** Ao criar ou atualizar um pedido, um evento Laravel Broadcasting é disparado para atualizar a cozinha em real-time (sem necessidade de refresh).
 
-IMPORTANTE 
-Os pedidos devem conter o número da mesa que fez o pedido -> tablet 1 = mesa 1, tablet 2 = mesa2 (Preciso entender melhor como faz esta divisão)
+---
 
-Cada pedido como um card:
-Mesa: 3
-Pedido: #102
-Itens:
-X-Burger
-Batata
-Observação: “Sem picles”
+### 3.3 Módulo Cozinha (Kitchen)
 
-Botão grande:
-[Marcar como pronto]
+Acesso restrito ao role `kitchen`.
 
+**Telas:**
 
-TELA DE CADASTROS -> apenas o admin consegue cadastrar
-os cadastros são:
-Cadastro de usuário -> botão para adicionar o usuário -> abre um menu na própria tela para fazer o cadastro do usuário pede o nome, departamento em que ele vai fazer parte, senha para login e o e-mail. A senha deve ser apenas para o primeiro login, quando o usuário faz o primeiro acesso na plataforma a plataforma pede uma redefinição de senha. Precisa de um botão para editar e apagar o usuário da listas de usuário. 
+- **Dashboard:** total de pedidos em preparo, últimos pedidos, tempo médio de preparo
+- **Pedidos em preparo:** lista de `orders` com `status = in_progress`. Cada card exibe número da mesa, número do pedido, itens com observações e botão de ação principal
+- **Histórico de pedidos:** lista de `orders` com `status = ready | cancelled`, com filtro por intervalo de datas (`date_from`, `date_to`)
 
-Os usuários são listados 
-nome usuário
-e-mail
-departamento
-ações -> editar e apagar
+**Ações disponíveis pela cozinha:**
 
+- Marcar pedido como `ready`
+- Marcar pedido como `cancelled`
 
-Cadastro de pratos -> Nome do prato, descrição, preço e foto do prato
-Os pratos são listados também em uma lista 
-Nome do prato
-descrição
-preço
-ações -> editar e apagar
-Deve ser categorizado, exemplo: Pratos principais, bebidas, sobremesas
+---
 
-Departamentos -> Os departamentos também já devem ser criados -> Admin, cozinha e financeiro (SEM OPÇÃO PARA EDIÇÃO OU EXCLUSÃO)
+### 3.4 Módulo Financeiro / Caixa (Finance)
 
+Acesso restrito ao role `finance`.
 
-GERENCIAMENTO DO FINANCEIRO / CAIXA
+**Telas:**
 
-O financeiro também atua como caixa do restaurante, sendo responsável por visualizar os pedidos das mesas e realizar o fechamento da conta.
+- **Dashboard de métricas:** indicadores financeiros do período
+- **Gestão de mesas:** visualização de todas as mesas com pedidos em aberto
 
-O caixa consegue visualizar todas as mesas que possuem pedidos registrados no sistema e identificar se a conta já foi paga ou não.
+**Métricas exibidas:**
 
-Funcionalidades do caixa:
-Visualiza todas as mesas com pedidos em aberto
-Visualiza o total acumulado por mesa
-Identifica o status da mesa (EM ABERTO ou PAGO)
-Pode acessar os detalhes dos pedidos de cada mesa
-Realiza o fechamento da conta da mesa
-VISUALIZAÇÃO DAS MESAS
+- Total de pedidos (dia / semana / mês)
+- Pedidos em andamento
+- Faturamento total (`ganhos`)
+- Despesas (campo editável pelo admin)
+- Faturamento do dia
+- Número de mesas atendidas
 
-As mesas devem ser exibidas em formato de lista ou cards contendo:
+**Gestão de mesas:**
 
-Número da mesa
-Valor total dos pedidos da mesa
-Status da mesa:
-EM ABERTO
-PAGO
+- Cards ou lista de mesas com pedidos registrados
+- Cada mesa exibe: número da mesa, valor total (`sum` de `order_items.price` onde `paid = false`), status (`OPEN` | `PAID`)
+- Ação: `[Ver detalhes]` — lista todos os pedidos da mesa com itens, preços individuais, status de cada pedido e observações
+- Ação: `[Fechar conta]` — executa transação que marca todos os pedidos da mesa como `paid = true`
 
-Ações disponíveis:
-[Ver detalhes]
-[Fechar conta]
-DETALHES DA MESA
+**Regra de negócio:** Apenas pedidos com `paid = false` são computados no total da mesa. Pedidos pagos permanecem no banco para fins de histórico e relatórios.
 
-Ao acessar os detalhes da mesa, o caixa consegue visualizar:
+---
 
-Lista de todos os pedidos da mesa
-Itens de cada pedido
-Preço individual dos itens
-Status do pedido (EM PREPARO, PRONTO, CANCELADO)
-Observações feitas pelo cliente (ex: sem picles)
+### 3.5 Módulo Garçom (Waiter) — Novo
 
-Também deve ser exibido:
+Acesso restrito ao role `waiter`.
 
-Valor total da mesa (soma de todos os pedidos não pagos)
-TRIAGEM DE PAGAMENTO (IMPORTANTE)
+O garçom possui interface própria focada em operação presencial.
 
-Todos os pedidos devem possuir um controle de pagamento para identificar se já foram pagos ou não.
+**Responsabilidades:**
 
-Pedidos com pagamento pendente:
-paid = false
-Pedidos já pagos:
-paid = true
+- Visualizar pedidos ativos por mesa
+- Cada pedido exibido com: número da mesa, itens solicitados, observações do cliente
+- Realizar fechamento de conta presencialmente (equivalente à ação do financeiro, porém acessível sem o dashboard completo)
 
-O caixa deve considerar apenas os pedidos com pagamento pendente para calcular o total da mesa.
+**Tela principal:**
 
-FECHAMENTO DA CONTA
+- Lista de mesas ativas com pedidos `in_progress` ou `ready` e `paid = false`
+- Ao selecionar mesa: exibe detalhamento dos pedidos (itens + observações + total)
+- Botão `[Fechar conta]` para marcar mesa como paga
 
-Ao clicar em [Fechar conta], o sistema deve:
+> Nota de implementação: a ação de fechamento pode ser a mesma rota do módulo financeiro com verificação de roles permitidos (`finance`, `waiter`).
 
-Marcar todos os pedidos da mesa como pagos (paid = true)
-Alterar o status da mesa para PAGO
+---
 
-Após isso:
+### 3.6 Módulo Admin
 
-A mesa não deve mais aparecer como pendente
-Os pedidos continuam registrados para histórico e relatórios
-FORMA DE PAGAMENTO (OPCIONAL - DIFERENCIAL)
+Acesso restrito ao role `admin`. Acesso total ao sistema.
 
-MÉTRICAS DO FINANCEIRO
+**Cadastros gerenciados:**
 
-O departamento financeiro deve visualizar indicadores do sistema, como:
+- **Usuários:** CRUD completo. Campos: nome, e-mail, senha temporária, departamento. Formulário em slide-over/modal inline (sem navegação para nova página)
+- **Pratos:** CRUD completo. Campos: nome, descrição, preço, foto (upload), categoria (`main_course` | `drinks` | `desserts` | customizável). Listagem com filtro por categoria
+- **Departamentos:** Pré-seeded via migration/seeder (`admin`, `kitchen`, `finance`, `waiter`). Sem interface de criação/edição/exclusão
 
-Total de pedidos
-Pedidos em andamento
-Ganhos totais
-Despesas
-Faturamento do dia
-Número de mesas atendidas
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-FLUXO DA TELA DE TABLET Subdomínio (PROTÓTIPO)
-Cliente registra pedido e pode fazer observação EX: SEM PICLES
+**Dashboard admin:**
+
+- Resumo de todos os departamentos: pedidos ativos, total faturado, mesas abertas
+
+---
+
+### 3.7 Módulo Tablet (Interface do Cliente)
+
+Subdomínio separado (ex: `tablet.restaurante.com` ou `mesa.restaurante.com`).
+
+- Cada tablet é configurado com um `table_id` fixo (tablet 1 = mesa 1)
+- O cliente navega pelo cardápio, seleciona pratos, adiciona observações e confirma o pedido
+- Ao confirmar, a ordem é criada via API com `origin = table` e `status = pending`
+- A cozinha recebe o pedido em real-time via WebSocket
+
+---
+
+### 3.8 Módulo Delivery
+
+Pedidos com `origin = delivery` entram no mesmo pipeline de `orders`.
+
+**Diferenças de comportamento:**
+
+- O cliente pode acompanhar o status do pedido pelo subdomínio delivery (polling ou WebSocket)
+- Status visível para o cliente: `Em preparo`, `Pronto para retirada / Saiu para entrega`, `Entregue`
+
+---
+
+### 3.9 Módulo WhatsApp (SaaS Opcional)
+
+Módulo contratável por instância de restaurante. Integra com a API oficial do WhatsApp Business (WABA) ou provider terceiro.
+
+**Conceito de Tickets:**
+Cada conversa iniciada por um cliente no WhatsApp gera um `ticket` no sistema.
+
+**Status dos tickets:**
 
 
+| Status        | Descrição                                          |
+| ------------- | -------------------------------------------------- |
+| `triage`      | Primeira mensagem recebida, aguardando atendimento |
+| `in_progress` | Ticket em atendimento por um agente                |
+| `closed`      | Atendimento encerrado                              |
 
 
-Diferenciais
-O cliente consegue fazer uma avaliação dentro da página principal do site (ideia inicial) 
-Avaliação de prato feita pelo cliente estilo LatterBox
+**Fluxo:**
+
+1. Cliente envia mensagem no WhatsApp → webhook recebe → cria ticket com `status = triage`
+2. Agente (role `whatsapp_agent`) acessa o painel de tickets, assume o ticket → `status = in_progress`
+3. Agente e cliente trocam mensagens dentro da plataforma (interface estilo chat)
+4. Pedido é registrado e associado ao ticket
+5. Agente encerra o atendimento → `status = closed`
+
+**Entities:** `wa_tickets`, `wa_messages`, `wa_ticket_orders` (pivot para associar pedidos ao ticket)
+
+**Considerações de implementação:**
+
+- Webhooks da API do WhatsApp precisam de endpoint público (usar ngrok em dev ou domínio real)
+- Rate limiting nos envios de mensagem conforme políticas da Meta
+- O módulo é ativado/desativado por configuração de feature flag na instância do restaurante (`features.whatsapp = true/false`)
+
+---
+
+## 4. Modelos de Dados Principais
+
+```
+users
+  id, name, email, password, role_id, department_id, must_reset_password, timestamps
+
+departments
+  id, name, slug
+
+roles
+  id, name, slug
+
+orders
+  id, table_id, origin (enum: table|delivery), status (enum: pending|in_progress|ready|cancelled),
+  paid (bool), wa_ticket_id (nullable), customer_name (nullable), timestamps
+
+order_items
+  id, order_id, dish_id, quantity, unit_price, note, timestamps
+
+dishes
+  id, name, description, price, photo_path, category_id, active, timestamps
+
+dish_categories
+  id, name, slug
+
+tables
+  id, number, label
+
+wa_tickets
+  id, phone_number, customer_name, status (enum: triage|in_progress|closed),
+  agent_id (nullable FK → users), timestamps
+
+wa_messages
+  id, wa_ticket_id, direction (inbound|outbound), body, timestamps
+```
+
+---
+
+## 5. Eventos e Real-time
+
+
+| Evento               | Canal                            | Consumidor                                |
+| -------------------- | -------------------------------- | ----------------------------------------- |
+| `OrderCreated`       | `kitchen` channel                | Cozinha (novo pedido aparece sem refresh) |
+| `OrderStatusUpdated` | `kitchen`, `delivery.{order_id}` | Cozinha + cliente acompanhando delivery   |
+| `TableClosed`        | `finance` channel                | Financeiro / Garçom                       |
+| `WaTicketCreated`    | `whatsapp` channel               | Agente WhatsApp                           |
+
+
+Implementado via **Laravel Broadcasting** com driver Pusher ou **Laravel Reverb** (self-hosted).
+
+---
+
+## 6. Fluxos de Tela por Departamento
+
+### Login
+
+- Campos: `username` + `password`
+- Após autenticação: redireciona para dashboard do departamento do usuário
+- First login: intercepta e redireciona para `/password/reset`
+
+### Dashboard (dinâmico por role)
+
+- `admin` → resumo multi-departamento
+- `kitchen` → pedidos em preparo, últimos pedidos, tempo médio
+- `finance` → faturamento, mesas abertas, métricas
+- `waiter` → mesas com pedidos ativos
+
+### Tela de Pedidos (Cozinha)
+
+- Tabs: `[Em preparo]` | `[Histórico]`
+- Em preparo: cards com mesa, número do pedido, itens, observações, botão primário de ação
+- Histórico: tabela com filtro de data (`date_from` → `date_to`), badge de status
+
+### Cadastros (Admin)
+
+- `/admin/users` — listagem com slide-over de criação/edição
+- `/admin/dishes` — listagem com filtro por categoria, slide-over de criação/edição, upload de foto
+- `/admin/departments` — listagem read-only
+
+### Mesas / Caixa (Finance e Waiter)
+
+- Grid de cards de mesa: número, total, badge de status
+- Tela de detalhe: lista de pedidos com itens, preços, observações, total, botão fechar conta
+
+### WhatsApp (Agente)
+
+- Inbox de tickets com filtro por status (`triage` | `in_progress` | `closed`)
+- Tela de ticket: histórico de mensagens (estilo chat), campo de resposta, ação para registrar pedido, botão de encerramento
+
+---
+
+## 7. Ideias Futuras (Backlog)
+
+> Itens não priorizados para o MVP, mas que devem ser considerados na modelagem do banco e arquitetura para evitar refatorações custosas.
+
+- **Formas de pagamento:** registro de método utilizado no fechamento da conta (PIX, cartão, dinheiro) com split entre métodos
+- **Avaliação de pratos (LatterBox):** cliente avalia prato após consumo; nota e comentário vinculados ao `order_item`; dashboard de média por prato no admin
+- **Múltiplos restaurantes (multi-tenant):** separação de dados por `tenant_id` em todas as tabelas principais; painel de superadmin
+- **Relatórios exportáveis:** export de histórico de pedidos e financeiro em PDF/CSV
+- **Notificações push no tablet:** alertar cliente quando pedido estiver pronto
+- **KDS (Kitchen Display System):** tela de cozinha otimizada para dispositivo touchscreen sem teclado
+- **Tempo estimado de preparo por prato:** campo `preparation_time_minutes` em `dishes`; cálculo de ETA por pedido
+- **Impressão de comanda:** integração com impressora térmica via QZ Tray ou similar
+
+---
+
+## 8. Considerações de Segurança
+
+- Todas as rotas do painel exigem autenticação (`auth` middleware)
+- Rotas por departamento utilizam middleware de role (`role:kitchen`, `role:finance`, etc.)
+- Tokens de primeiro login expiram após 24h
+- Upload de fotos validado por MIME type e tamanho máximo
+- Webhooks do WhatsApp validados por HMAC signature da Meta
+- Variáveis sensíveis (API keys, DB credentials) gerenciadas via `.env` e nunca commitadas
+
+---
+
+*Documento gerado para servir como contexto base para desenvolvimento incremental por feature. Cada seção pode ser detalhada individualmente conforme a feature for solicitada.*
