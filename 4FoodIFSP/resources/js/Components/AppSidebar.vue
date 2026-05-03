@@ -27,6 +27,7 @@ const cadastrosOptions = [
 
 const splitAfter = new Set(['dashboard', 'cadastros']);
 const isCadastrosMenuOpen = ref(false);
+const isUserMenuOpen = ref(false);
 
 function isDisabled(item) {
     return !item.route && item.key !== 'cadastros';
@@ -41,6 +42,8 @@ function isActive(item) {
 }
 
 function onItemClick(item) {
+    isUserMenuOpen.value = false;
+
     if (item.key === 'cadastros') {
         isCadastrosMenuOpen.value = !isCadastrosMenuOpen.value;
         return;
@@ -59,6 +62,16 @@ function onCadastrosOptionSelect(route) {
     router.visit(route);
 }
 
+function toggleUserMenu() {
+    isUserMenuOpen.value = !isUserMenuOpen.value;
+    isCadastrosMenuOpen.value = false;
+}
+
+function logout() {
+    isUserMenuOpen.value = false;
+    router.post('/logout');
+}
+
 function onWindowClick(event) {
     if (!(event.target instanceof HTMLElement)) {
         return;
@@ -66,6 +79,10 @@ function onWindowClick(event) {
 
     if (!event.target.closest('.cadastros-wrapper')) {
         isCadastrosMenuOpen.value = false;
+    }
+
+    if (!event.target.closest('.user-menu-wrapper')) {
+        isUserMenuOpen.value = false;
     }
 }
 
@@ -80,7 +97,16 @@ onBeforeUnmount(() => {
 
 <template>
     <aside class="sidebar">
-        <div class="avatar">A</div>
+        <div class="user-menu-wrapper">
+            <button type="button" class="avatar" aria-label="Menu do usuário" @click.stop="toggleUserMenu">
+                A
+            </button>
+
+            <div v-if="isUserMenuOpen" class="user-menu">
+                <button type="button" class="user-menu-item logout" @click="logout">Sair</button>
+                <p class="user-menu-version">versão 1.0.0</p>
+            </div>
+        </div>
 
         <template v-for="item in items" :key="item.key">
             <div v-if="item.key === 'cadastros'" class="cadastros-wrapper">
