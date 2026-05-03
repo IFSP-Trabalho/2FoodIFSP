@@ -1,0 +1,47 @@
+.submenu {
+    width: 220px;
+    min-width: 220px;
+    height: 100vh;
+    background: #fff;
+    border-right: 1px solid #eceef0;
+    padding: 14px 10px;
+}
+
+.submenu-title {
+    margin: 0 0 10px;
+    color: #7b7f89;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+
+.submenu-item {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    border-radius: 10px;
+    color: #2a303b;
+    padding: 10px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.submenu-item.active {
+    background: #faece7;
+    color: #993c1d;
+}
+
+.soon-badge {
+    border-radius: 999px;
+    border: 1px solid #eceef0;
+    background: #f5f6f8;
+    color: #666c79;
+    font-size: 10px;
+    padding: 2px 8px;
+}

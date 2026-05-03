@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrdersController;
+use App\Http\Controllers\Admin\UsersController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -19,6 +20,16 @@ Route::middleware('firebase.auth')->group(function () {
         Route::get('/orders', [OrdersController::class, 'index'])->name('orders');
         Route::get('/orders/history', [OrdersController::class, 'history'])->name('orders.history');
         Route::patch('/orders/{order}/status', [OrdersController::class, 'updateStatus'])->name('orders.updateStatus');
+
+        Route::prefix('cadastros')->name('cadastros.')->group(function () {
+            Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+            Route::get('/departments', [UsersController::class, 'departments'])->name('departments.index');
+            Route::get('/dishes', [UsersController::class, 'dishes'])->name('dishes.index');
+            Route::post('/users', [UsersController::class, 'store'])->name('users.store');
+            Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+            Route::put('/users/{user}/departments', [UsersController::class, 'syncDepartments'])->name('users.syncDepartments');
+        });
     });
 
     Route::get('/kitchen/dashboard', function () {

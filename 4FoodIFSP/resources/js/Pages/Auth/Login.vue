@@ -185,34 +185,4 @@ async function handleLogin() {
     </main>
 </template>
 
-<style scoped>
-.login-log-enter-active,
-.login-log-leave-active {
-    transition: all 0.28s ease;
-}
-
-.login-log-enter-from {
-    opacity: 0;
-    transform: translateY(-14px);
-}
-
-.login-log-leave-to {
-    opacity: 0;
-    transform: translateY(-10px);
-}
-
-.animate-log-timer {
-    animation-name: logTimer;
-    animation-timing-function: linear;
-    animation-fill-mode: forwards;
-}
-
-@keyframes logTimer {
-    from {
-        transform: scaleX(1);
-    }
-    to {
-        transform: scaleX(0);
-    }
-}
-</style>
+<style scoped src="./styles/Login.css"></style>

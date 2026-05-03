@@ -1,0 +1,107 @@
+.sidebar {
+    width: 52px;
+    min-width: 52px;
+    height: 100vh;
+    padding: 8px 0;
+    background: #fff;
+    border-right: 1px solid #eceef0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #faece7;
+    color: #993c1d;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-item {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #6f6f78;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.nav-item svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.nav-item.active {
+    background: #faece7;
+    color: #993c1d;
+}
+
+.nav-item.disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.divider {
+    width: 24px;
+    border: 0;
+    border-top: 1px solid #eceef0;
+    margin: 2px 0 4px;
+}
+
+.cadastros-wrapper {
+    position: relative;
+}
+
+.cadastros-menu {
+    position: absolute;
+    top: -2px;
+    left: 44px;
+    width: 180px;
+    background: #fff;
+    border: 1px solid #d9dde3;
+    border-radius: 10px;
+    box-shadow: 0 8px 18px rgba(17, 24, 39, 0.12);
+    padding: 8px;
+    z-index: 20;
+    display: grid;
+    gap: 4px;
+}
+
+.cadastros-menu-item {
+    border: 0;
+    background: transparent;
+    border-radius: 8px;
+    color: #2a303b;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.cadastros-menu-item:hover {
+    background: #f3f5f8;
+}
+
+.cadastros-menu-item svg {
+    width: 15px;
+    height: 15px;
+    fill: #556070;
+    flex-shrink: 0;
+}

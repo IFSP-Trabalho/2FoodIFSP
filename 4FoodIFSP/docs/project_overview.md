@@ -31,6 +31,15 @@ O produto é concebido como um SaaS, permitindo que restaurantes contratem módu
 
 ---
 
+## 2.1 Padrão de estilos frontend (obrigatório)
+
+- Não manter CSS inline dentro de arquivos `.vue` (evitar blocos `<style> ... </style>` com regras escritas no componente).
+- Todo estilo deve ficar em arquivo `.css` dedicado por tela/componente, dentro da pasta `styles` do módulo.
+- O `.vue` deve apenas referenciar o arquivo externo, por exemplo: `<style scoped src="./styles/NomeDoComponente.css"></style>`.
+- Este padrão é obrigatório para todas as novas features e para manutenção de componentes existentes.
+
+---
+
 ## 3. Módulos e Domínios do Sistema
 
 ### 3.1 Autenticação e RBAC

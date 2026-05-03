@@ -1,0 +1,39 @@
+.shell {
+    min-height: 100vh;
+    display: flex;
+    background: #f6f7f9;
+}
+
+.main {
+    flex: 1;
+}
+
+.topbar {
+    height: 52px;
+    border-bottom: 1px solid #eceef0;
+    background: #fff;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 20px;
+    color: #17181e;
+}
+
+.content {
+    margin: 16px;
+    background: #fff;
+    border: 1px solid #eceef0;
+    border-radius: 12px;
+    padding: 18px;
+    color: #4f5563;
+    display: grid;
+    gap: 8px;
+}
+
+.content p {
+    margin: 0;
+}
