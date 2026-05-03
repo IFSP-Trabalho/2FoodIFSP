@@ -14,14 +14,31 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Firebase UID como chave primária (string).
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
+    /**
+     * O id não é auto incrementável.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
+        'id',
         'name',
         'email',
-        'password',
+        'role',
+        'department_id',
+        'must_reset_password',
     ];
 
     /**
@@ -30,8 +47,6 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
-        'remember_token',
     ];
 
     /**
@@ -42,8 +57,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'must_reset_password' => 'boolean',
         ];
     }
 }

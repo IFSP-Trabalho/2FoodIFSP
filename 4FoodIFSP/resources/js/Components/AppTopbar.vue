@@ -1,0 +1,77 @@
+<script setup>
+defineProps({
+    title: {
+        type: String,
+        required: true,
+    },
+    subtitle: {
+        type: String,
+        required: true,
+    },
+    roleBadge: {
+        type: String,
+        default: 'Admin',
+    },
+});
+</script>
+
+<template>
+    <header class="topbar">
+        <div class="title-wrap">
+            <span class="dot" />
+            <div>
+                <h1>{{ title }}</h1>
+                <p>{{ subtitle }}</p>
+            </div>
+        </div>
+        <span class="role-badge">{{ roleBadge }}</span>
+    </header>
+</template>
+
+<style scoped>
+.topbar {
+    height: 52px;
+    border-bottom: 1px solid #eceef0;
+    background: #fff;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1d9e75;
+}
+
+h1 {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.2;
+    color: #17171c;
+}
+
+p {
+    margin: 0;
+    font-size: 11px;
+    color: #70737d;
+}
+
+.role-badge {
+    border-radius: 999px;
+    border: 1px solid #f0d7ce;
+    background: #faece7;
+    color: #712b13;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+</style>
