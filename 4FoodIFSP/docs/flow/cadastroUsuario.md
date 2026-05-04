@@ -46,6 +46,20 @@ Depois da validacao:
 - Novo usuario aparece na lista de usuarios em `cadastros/users`.
 - Usuario criado passa a conseguir logar na plataforma (conta existente no Firebase + registro em `users`).
 
+## Exclusao de usuario (soft delete)
+Fluxo de exclusao:
+1. Admin confirma a exclusao na lista.
+2. Backend protege o admin root (`ADMIN_FIREBASE_UID`) para impedir remocao.
+3. Sistema desativa a conta no Firebase (`disabled = true`).
+4. Sistema aplica soft delete na tabela `users` (`deleted_at` preenchido).
+5. Listagem padrao deixa de exibir o usuario removido.
+
+## Login apos exclusao
+- Usuario removido nao consegue mais logar.
+- No Firebase, a conta fica desativada.
+- No sistema local, `User::find($uid)` nao encontra registros com soft delete.
+- Quando o UID existir apenas em registro removido, o login retorna erro `Usuario removido da plataforma.`.
+
 ## Regra futura ja preparada (ainda desativada)
 Foi deixado um scaffold para limite de criacao por liberacao do admin:
 - Servico `UserCreationLimitService` com metodo `canCreateUserByPlan()`.

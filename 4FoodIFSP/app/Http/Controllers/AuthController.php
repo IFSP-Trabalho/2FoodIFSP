@@ -52,6 +52,14 @@ class AuthController extends Controller
         $user = User::find($uid);
 
         if (! $user instanceof User) {
+            $deletedUser = User::withTrashed()->find($uid);
+
+            if ($deletedUser instanceof User && $deletedUser->trashed()) {
+                return back()->withErrors([
+                    'email' => 'Usuario removido da plataforma.',
+                ]);
+            }
+
             abort(HttpResponse::HTTP_FORBIDDEN, 'Usuario nao cadastrado no sistema.');
         }
 

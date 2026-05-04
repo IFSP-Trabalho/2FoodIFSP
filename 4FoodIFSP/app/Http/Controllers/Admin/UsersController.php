@@ -99,8 +99,28 @@ class UsersController extends Controller
 
     public function destroy(string $user): RedirectResponse
     {
-        // MVP: incluir validacao para proteger admin root na proxima fase.
-        return back();
+        $targetUser = User::query()->find($user);
+
+        if (! $targetUser instanceof User) {
+            return back()->withErrors([
+                'delete' => 'Usuario nao encontrado ou ja removido.',
+            ]);
+        }
+
+        $rootAdminUid = trim((string) env('ADMIN_FIREBASE_UID', ''));
+        if ($rootAdminUid !== '' && (string) $targetUser->id === $rootAdminUid) {
+            return back()->withErrors([
+                'delete' => 'Admin root nao pode ser removido.',
+            ]);
+        }
+
+        $this->firebaseUserProvisioningService->disableUser((string) $targetUser->id);
+
+        $targetUser->delete();
+
+        return redirect()
+            ->route('admin.cadastros.users.index')
+            ->with('success', 'Usuario excluido com sucesso.');
     }
 
     public function syncDepartments(string $user): RedirectResponse

@@ -129,7 +129,8 @@ Cabeçalho conforme solicitado:
 - Usuário novo é criado por admin com senha temporária
 - Vinculação com departamentos/roles respeita regras de RBAC
 - Limite de usuários por liberação do admin já possui scaffold técnico, mas ainda não está ativo
-- Exclusão deve ser protegida (confirmação obrigatória)
+- Exclusão usa soft delete (`deleted_at`) com confirmação obrigatória
+- Exclusão desativa a conta no Firebase (`disabled=true`) antes do soft delete local
 - Admin root não pode ser removido pela UI (regra de segurança)
 
 ---
@@ -178,6 +179,14 @@ public function store(Request $request): RedirectResponse
     // valida username, departamento, email e senha
     // verifica scaffold de limite (ainda sem bloquear)
     // cria no Firebase Auth e persiste em users com id = uid
+    return redirect()->route('admin.cadastros.users.index');
+}
+
+public function destroy(string $user): RedirectResponse
+{
+    // bloqueia exclusao do admin root
+    // desativa conta no Firebase
+    // aplica soft delete em users (deleted_at)
     return redirect()->route('admin.cadastros.users.index');
 }
 ```
@@ -283,7 +292,7 @@ const filteredUsers = computed(() => {
 
 - CRUD de **Departamentos (roles)** (fase futura)
 - CRUD de **Pratos** (fase futura)
-- Persistência real de `update`, `delete` e `syncDepartments` (somente `create` está ativo)
+- Persistência real de `update` e `syncDepartments`
 - Paginação server-side de usuários
 - Upload de foto/avatar do usuário
 
@@ -302,3 +311,4 @@ const filteredUsers = computed(() => {
 - [x] Rotas admin/cadastros/users definidas
 - [x] `Admin\\UsersController@index` retornando dados reais do banco
 - [x] `Admin\\UsersController@store` criando usuário no Firebase + tabela `users`
+- [x] `Admin\\UsersController@destroy` com soft delete + disable no Firebase

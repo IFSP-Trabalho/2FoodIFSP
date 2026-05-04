@@ -58,4 +58,25 @@ class FirebaseUserProvisioningService
 
         return $uid;
     }
+
+    /**
+     * Disable an existing Firebase Auth user (best-effort).
+     * Returns true on success, false if Firebase Admin SDK is unavailable or the call fails.
+     * The caller should apply soft delete regardless of this result, since the local
+     * deleted_at already prevents login.
+     */
+    public function disableUser(string $uid): bool
+    {
+        if (! class_exists(Firebase::class)) {
+            return false;
+        }
+
+        try {
+            Firebase::auth()->updateUser($uid, ['disabled' => true]);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
+    }
 }

@@ -22,10 +22,7 @@ function onDelete() {
         return;
     }
 
-    const confirmed = window.confirm(`Deseja remover o usuario ${props.user.name}?`);
-    if (confirmed) {
-        emit('delete', props.user);
-    }
+    emit('delete', props.user);
 }
 </script>
 

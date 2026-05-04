@@ -1,5 +1,5 @@
 <script setup>
-import { useForm, usePage } from '@inertiajs/vue3';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppSidebar from '../../../Components/AppSidebar.vue';
 import UsersTableRow from '../../../Components/UsersTableRow.vue';
@@ -20,6 +20,8 @@ const search = ref('');
 const isLoading = ref(false);
 const isCreateMenuOpen = ref(false);
 const isPasswordVisible = ref(false);
+const pendingDeleteUser = ref(null);
+const isDeleting = ref(false);
 
 const createUserForm = useForm({
     username: '',
@@ -33,6 +35,7 @@ function togglePasswordVisibility() {
 }
 
 const flashSuccess = computed(() => page.props.flash?.success ?? '');
+const deleteError = computed(() => page.props.errors?.delete ?? '');
 
 const filteredUsers = computed(() => {
     if (!search.value.trim()) {
@@ -82,7 +85,27 @@ function handleEdit(user) {
 }
 
 function handleDelete(user) {
-    window.alert(`Exclusao do usuario ${user.name} sera integrada com persistencia na proxima fase.`);
+    pendingDeleteUser.value = user;
+}
+
+function confirmDelete() {
+    if (!pendingDeleteUser.value || isDeleting.value) {
+        return;
+    }
+
+    isDeleting.value = true;
+
+    router.delete(`/admin/cadastros/users/${pendingDeleteUser.value.id}`, {
+        preserveScroll: true,
+        onFinish: () => {
+            isDeleting.value = false;
+            pendingDeleteUser.value = null;
+        },
+    });
+}
+
+function cancelDelete() {
+    pendingDeleteUser.value = null;
 }
 
 function handleAddUser() {
@@ -130,6 +153,9 @@ function handleSaveUser() {
                 <p v-if="flashSuccess" class="feedback success">
                     {{ flashSuccess }}
                 </p>
+                <p v-if="deleteError" class="feedback error">
+                    {{ deleteError }}
+                </p>
 
                 <section class="table-card">
                     <div class="table-head">
@@ -167,6 +193,29 @@ function handleSaveUser() {
                         />
                     </template>
                 </section>
+            </div>
+        </div>
+
+        <div v-if="pendingDeleteUser" class="confirm-delete-overlay" @click.self="cancelDelete">
+            <div class="confirm-delete-dialog">
+                <div class="confirm-delete-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M8 4h8l1 2h4v2H3V6h4l1-2Zm1 6h2v8H9v-8Zm4 0h2v8h-2v-8ZM6 8h12l-1 12H7L6 8Z" />
+                    </svg>
+                </div>
+                <h3>Excluir usuario</h3>
+                <p>
+                    Deseja excluir <strong>{{ pendingDeleteUser.name }}</strong>?
+                    Esta ação não pode ser desfeita.
+                </p>
+                <footer class="confirm-delete-actions">
+                    <button type="button" class="secondary" :disabled="isDeleting" @click="cancelDelete">
+                        Cancelar
+                    </button>
+                    <button type="button" class="danger" :disabled="isDeleting" @click="confirmDelete">
+                        {{ isDeleting ? 'Excluindo...' : 'Excluir' }}
+                    </button>
+                </footer>
             </div>
         </div>
 
