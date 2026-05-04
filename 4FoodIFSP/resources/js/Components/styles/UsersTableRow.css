@@ -1,6 +1,6 @@
 .row {
     display: grid;
-    grid-template-columns: 90px minmax(220px, 1.3fr) minmax(220px, 1.1fr) minmax(220px, 1fr) 130px;
+    grid-template-columns: minmax(220px, 1.3fr) minmax(220px, 1.1fr) minmax(220px, 1fr) 130px;
     gap: 10px;
     align-items: center;
     padding: 12px;
@@ -11,11 +11,6 @@
     min-width: 0;
     font-size: 13px;
     color: #1f242e;
-}
-
-.id-cell {
-    font-family: 'JetBrains Mono', 'DM Mono', monospace;
-    color: #5f6572;
 }
 
 .user-cell {

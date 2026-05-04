@@ -14,33 +14,37 @@ Route::post('/auth/firebase', [AuthController::class, 'firebaseLogin'])->name('a
 
 Route::middleware('firebase.auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/password/change', [AuthController::class, 'showPasswordChange'])->name('password.change.show');
+    Route::post('/password/change', [AuthController::class, 'updatePasswordOnFirstAccess'])->name('password.change.update');
 
-    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/orders', [OrdersController::class, 'index'])->name('orders');
-        Route::get('/orders/history', [OrdersController::class, 'history'])->name('orders.history');
-        Route::patch('/orders/{order}/status', [OrdersController::class, 'updateStatus'])->name('orders.updateStatus');
+    Route::middleware('force.password.reset')->group(function () {
+        Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+            Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+            Route::get('/orders', [OrdersController::class, 'index'])->name('orders');
+            Route::get('/orders/history', [OrdersController::class, 'history'])->name('orders.history');
+            Route::patch('/orders/{order}/status', [OrdersController::class, 'updateStatus'])->name('orders.updateStatus');
 
-        Route::prefix('cadastros')->name('cadastros.')->group(function () {
-            Route::get('/users', [UsersController::class, 'index'])->name('users.index');
-            Route::get('/departments', [UsersController::class, 'departments'])->name('departments.index');
-            Route::get('/dishes', [UsersController::class, 'dishes'])->name('dishes.index');
-            Route::post('/users', [UsersController::class, 'store'])->name('users.store');
-            Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
-            Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
-            Route::put('/users/{user}/departments', [UsersController::class, 'syncDepartments'])->name('users.syncDepartments');
+            Route::prefix('cadastros')->name('cadastros.')->group(function () {
+                Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+                Route::get('/departments', [UsersController::class, 'departments'])->name('departments.index');
+                Route::get('/dishes', [UsersController::class, 'dishes'])->name('dishes.index');
+                Route::post('/users', [UsersController::class, 'store'])->name('users.store');
+                Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
+                Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+                Route::put('/users/{user}/departments', [UsersController::class, 'syncDepartments'])->name('users.syncDepartments');
+            });
         });
+
+        Route::get('/kitchen/dashboard', function () {
+            return Inertia::render('Kitchen/Dashboard');
+        })->name('kitchen.dashboard');
+
+        Route::get('/finance/dashboard', function () {
+            return Inertia::render('Finance/Dashboard');
+        })->name('finance.dashboard');
+
+        Route::get('/waiter/dashboard', function () {
+            return Inertia::render('Waiter/Dashboard');
+        })->name('waiter.dashboard');
     });
-
-    Route::get('/kitchen/dashboard', function () {
-        return Inertia::render('Kitchen/Dashboard');
-    })->name('kitchen.dashboard');
-
-    Route::get('/finance/dashboard', function () {
-        return Inertia::render('Finance/Dashboard');
-    })->name('finance.dashboard');
-
-    Route::get('/waiter/dashboard', function () {
-        return Inertia::render('Waiter/Dashboard');
-    })->name('waiter.dashboard');
 });

@@ -67,7 +67,7 @@
 
 .table-head {
     display: grid;
-    grid-template-columns: 90px minmax(220px, 1.3fr) minmax(220px, 1.1fr) minmax(220px, 1fr) 130px;
+    grid-template-columns: minmax(220px, 1.3fr) minmax(220px, 1.1fr) minmax(220px, 1fr) 130px;
     gap: 10px;
     padding: 12px;
     border-bottom: 1px solid #eceef0;
@@ -120,6 +120,186 @@
     font-size: 14px;
 }
 
+.feedback {
+    margin: 0 0 12px;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.feedback.success {
+    border: 1px solid #b8dfc4;
+    background: #ecf8f0;
+    color: #256f3d;
+}
+
+.create-user-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgb(20 26 35 / 52%);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.create-user-panel {
+    width: min(420px, 100%);
+    height: 100%;
+    background: #fff;
+    border-left: 1px solid #eceef0;
+    box-shadow: -6px 0 24px rgb(14 20 31 / 16%);
+    display: flex;
+    flex-direction: column;
+}
+
+.create-user-head {
+    padding: 18px 18px 14px;
+    border-bottom: 1px solid #eceef0;
+}
+
+.create-user-head h2 {
+    margin: 0;
+    color: #1b1f29;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.create-user-head p {
+    margin: 6px 0 0;
+    color: #5f6572;
+    font-size: 13px;
+}
+
+.create-user-form {
+    flex: 1;
+    padding: 16px 18px;
+    display: grid;
+    grid-template-rows: repeat(4, auto) auto auto;
+    align-content: start;
+    gap: 14px;
+}
+
+.create-user-form label {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    color: #343a45;
+    font-weight: 600;
+}
+
+.create-user-form input,
+.create-user-form select {
+    border: 1px solid #d9dde3;
+    border-radius: 8px;
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #17181e;
+    outline: 0;
+    transition: border-color 0.15s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.create-user-form input:focus,
+.create-user-form select:focus {
+    border-color: #993c1d;
+}
+
+.password-field {
+    position: relative;
+}
+
+.password-field input {
+    padding-right: 40px;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #5f6572;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.password-toggle:hover {
+    background: #f1f2f5;
+    color: #1f242e;
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid #993c1d;
+    outline-offset: 2px;
+}
+
+.password-toggle svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.create-user-form small {
+    color: #c53030;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.form-warning {
+    margin: 0;
+    border: 1px solid #f4c6c6;
+    border-radius: 8px;
+    background: #fff2f2;
+    color: #b72323;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 10px;
+}
+
+.create-user-actions {
+    margin-top: 2px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.create-user-actions button {
+    border: 0;
+    border-radius: 8px;
+    min-width: 88px;
+    height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.create-user-actions button.secondary {
+    border: 1px solid #c6ccd5;
+    background: #fff;
+    color: #3d4654;
+}
+
+.create-user-actions button[type="submit"] {
+    background: #993c1d;
+    color: #fff;
+}
+
+.create-user-actions button:disabled {
+    opacity: 0.58;
+    cursor: not-allowed;
+}
+
 @keyframes pulse {
     0% {
         background-position: 100% 0;
@@ -136,6 +316,6 @@
     }
 
     .table-head {
-        min-width: 880px;
+        min-width: 790px;
     }
 }

@@ -9,7 +9,7 @@
 
 ## Objetivo
 
-Organizar os cadastros do sistema em uma área única, acessada pela sidebar principal. Ao clicar no ícone de Cadastros, deve abrir um menu lateral secundário com os tipos de cadastro disponíveis. No MVP, somente a tela de **Usuários** é implementada; **Departamentos (roles)** e **Pratos** ficam preparados para fase futura.
+Organizar os cadastros do sistema em uma área única, acessada pela sidebar principal. Ao clicar no ícone de Cadastros, deve abrir um menu lateral secundário com os tipos de cadastro disponíveis. A tela de **Usuários** possui criação funcional (formulário + persistência), enquanto **Departamentos (roles)** e **Pratos** ficam preparados para fase futura.
 
 ### Regra técnica de CSS (obrigatória)
 
@@ -128,6 +128,7 @@ Cabeçalho conforme solicitado:
 - Não existe auto-registro público
 - Usuário novo é criado por admin com senha temporária
 - Vinculação com departamentos/roles respeita regras de RBAC
+- Limite de usuários por liberação do admin já possui scaffold técnico, mas ainda não está ativo
 - Exclusão deve ser protegida (confirmação obrigatória)
 - Admin root não pode ser removido pela UI (regra de segurança)
 
@@ -164,68 +165,20 @@ Route::middleware(['firebase.auth', 'role:admin'])->prefix('admin')->name('admin
 <?php
 // app/Http/Controllers/Admin/UsersController.php
 
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
-use Inertia\Inertia;
-use Inertia\Response;
-
-class UsersController extends Controller
+public function index(): Response
 {
-    public function index(): Response
-    {
-        return Inertia::render('Admin/Cadastros/Users', [
-            'users' => $this->getUsers(), // MVP com dados estáticos
-            'departments' => $this->getDepartments(),
-        ]);
-    }
+    return Inertia::render('Admin/Cadastros/Users', [
+        'users' => $this->getUsers(),           // consulta real no banco
+        'departments' => $this->getDepartments() // select do formulario
+    ]);
+}
 
-    public function store()
-    {
-        // fase 2: persistência real
-        return redirect()->back();
-    }
-
-    public function update($user)
-    {
-        // fase 2: persistência real
-        return redirect()->back();
-    }
-
-    public function destroy($user)
-    {
-        // fase 2: persistência real + proteção do admin root
-        return redirect()->back();
-    }
-
-    public function syncDepartments($user)
-    {
-        // fase 2: atualizar pivot user_department
-        return redirect()->back();
-    }
-
-    private function getUsers(): array
-    {
-        return [
-            [
-                'id' => 'u-001',
-                'name' => 'Gabriel Henrique',
-                'email' => 'gabriel@4foods.com',
-                'departments' => ['Admin'],
-            ],
-            [
-                'id' => 'u-002',
-                'name' => 'Ana Souza',
-                'email' => 'ana@4foods.com',
-                'departments' => ['Kitchen'],
-            ],
-        ];
-    }
-
-    private function getDepartments(): array
-    {
-        return ['Admin', 'Kitchen', 'Finance', 'Waiter'];
-    }
+public function store(Request $request): RedirectResponse
+{
+    // valida username, departamento, email e senha
+    // verifica scaffold de limite (ainda sem bloquear)
+    // cria no Firebase Auth e persiste em users com id = uid
+    return redirect()->route('admin.cadastros.users.index');
 }
 ```
 
@@ -330,7 +283,7 @@ const filteredUsers = computed(() => {
 
 - CRUD de **Departamentos (roles)** (fase futura)
 - CRUD de **Pratos** (fase futura)
-- Persistência real de create/update/delete em banco (MVP com contrato definido)
+- Persistência real de `update`, `delete` e `syncDepartments` (somente `create` está ativo)
 - Paginação server-side de usuários
 - Upload de foto/avatar do usuário
 
@@ -342,9 +295,10 @@ const filteredUsers = computed(() => {
 - [ ] Submenu lateral de cadastros abre ao clicar no item da sidebar
 - [ ] Item `Usuários` implementado e ativo no submenu
 - [ ] Itens `Departamentos` e `Pratos` marcados como `Em breve`
-- [ ] Cabeçalho da tela com `Usuários`, `Localize` e botão `Adicionar`
+- [x] Cabeçalho da tela com `Usuários`, `Localize` e botão `Adicionar`
 - [ ] Tabela com colunas: ID, Nome usuário, E-mail, Departamentos, Ações
 - [ ] Linha com avatar redondo + nome do usuário
 - [ ] Ações por linha: gestão de departamentos, editar, deletar
-- [ ] Rotas admin/cadastros/users definidas
-- [ ] `Admin\\UsersController@index` retornando dados estáticos do MVP
+- [x] Rotas admin/cadastros/users definidas
+- [x] `Admin\\UsersController@index` retornando dados reais do banco
+- [x] `Admin\\UsersController@store` criando usuário no Firebase + tabela `users`

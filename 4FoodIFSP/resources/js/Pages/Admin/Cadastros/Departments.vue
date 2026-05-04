@@ -7,6 +7,22 @@ const props = defineProps({
         default: () => [],
     },
 });
+
+function getDepartmentKey(department) {
+    if (typeof department === 'string') {
+        return department;
+    }
+
+    return department.id ?? department.slug ?? department.name ?? 'department';
+}
+
+function getDepartmentLabel(department) {
+    if (typeof department === 'string') {
+        return department;
+    }
+
+    return department.label ?? department.name ?? 'Departamento';
+}
 </script>
 
 <template>
@@ -21,7 +37,9 @@ const props = defineProps({
             <section class="content">
                 <p>Pagina dedicada para cadastro de departamentos.</p>
                 <ul>
-                    <li v-for="department in props.departments" :key="department">{{ department }}</li>
+                    <li v-for="department in props.departments" :key="getDepartmentKey(department)">
+                        {{ getDepartmentLabel(department) }}
+                    </li>
                 </ul>
             </section>
         </main>

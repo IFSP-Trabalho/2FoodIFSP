@@ -25,6 +25,10 @@ class AuthController extends Controller
             /** @var User $user */
             $user = Auth::user();
 
+            if ($user->must_reset_password) {
+                return redirect()->route('password.change.show');
+            }
+
             return $this->redirectByRole($user->role);
         }
 
@@ -54,7 +58,61 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
+        if ($user->must_reset_password) {
+            return redirect()->route('password.change.show');
+        }
+
         return $this->redirectByRole($user->role);
+    }
+
+    public function showPasswordChange(): Response|RedirectResponse
+    {
+        if (! Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (! $user->must_reset_password) {
+            return $this->redirectByRole($user->role);
+        }
+
+        return Inertia::render('Auth/Login', ['changePassword' => true]);
+    }
+
+    public function updatePasswordOnFirstAccess(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        if (! $user->must_reset_password) {
+            return $this->redirectByRole($user->role);
+        }
+
+        $validated = $request->validate([
+            'idToken' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:6', 'max:80', 'confirmed'],
+        ]);
+
+        try {
+            $uid = $this->tokenVerifier->verifyAndGetUid($validated['idToken']);
+        } catch (Throwable) {
+            return back()->withErrors([
+                'new_password' => 'Nao foi possivel validar a nova senha no Firebase. Tente novamente.',
+            ]);
+        }
+
+        if ($uid !== (string) $user->id) {
+            abort(HttpResponse::HTTP_FORBIDDEN, 'Token invalido para este usuario.');
+        }
+
+        $user->forceFill([
+            'must_reset_password' => false,
+        ])->save();
+
+        return $this->redirectByRole($user->role)
+            ->with('success', 'Senha atualizada com sucesso.');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -68,12 +126,14 @@ class AuthController extends Controller
 
     private function redirectByRole(string $role): RedirectResponse
     {
-        if ($role !== 'admin') {
-            return redirect()
+        return match ($role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'kitchen' => redirect()->route('kitchen.dashboard'),
+            'finance' => redirect()->route('finance.dashboard'),
+            'waiter' => redirect()->route('waiter.dashboard'),
+            default => redirect()
                 ->route('login')
-                ->withErrors(['email' => 'Acesso permitido apenas para administradores.']);
-        }
-
-        return redirect()->route('admin.dashboard');
+                ->withErrors(['email' => 'Perfil sem rota de acesso configurada.']),
+        };
     }
 }

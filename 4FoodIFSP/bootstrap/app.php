@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'firebase.auth' => \App\Http\Middleware\FirebaseAuthMiddleware::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'force.password.reset' => \App\Http\Middleware\ForcePasswordResetMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

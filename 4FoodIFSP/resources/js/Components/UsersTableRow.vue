@@ -31,8 +31,6 @@ function onDelete() {
 
 <template>
     <div class="row">
-        <span class="cell id-cell">{{ props.user.id }}</span>
-
         <div class="cell user-cell">
             <span class="avatar">{{ initials(props.user.name) }}</span>
             <span class="name">{{ props.user.name }}</span>
