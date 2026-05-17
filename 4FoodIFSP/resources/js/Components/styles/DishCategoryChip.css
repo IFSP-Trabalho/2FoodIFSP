@@ -1,0 +1,60 @@
+.category-chip {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 140px;
+    border: 1px solid #eceef0;
+    border-radius: 12px;
+    background: #fff;
+    color: #17181e;
+    padding: 10px 12px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.category-chip.active {
+    border-color: #e67e22;
+    color: #e67e22;
+}
+
+.chip-icon {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chip-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.category-chip:not(.active) .chip-icon {
+    color: #5e6b7a;
+}
+
+.chip-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.chip-name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.chip-count {
+    font-size: 12px;
+    color: #5e6b7a;
+    line-height: 1.2;
+}
+
+.category-chip.active .chip-count {
+    color: #e67e22;
+}

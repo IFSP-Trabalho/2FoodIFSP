@@ -1,0 +1,77 @@
+.row {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) minmax(160px, 0.8fr) 80px;
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #eceef0;
+}
+
+.cell {
+    min-width: 0;
+    font-size: 13px;
+    color: #1f242e;
+}
+
+.name-cell {
+    font-weight: 600;
+}
+
+.color-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgb(0 0 0 / 8%);
+    flex-shrink: 0;
+}
+
+.color-hex {
+    font-size: 13px;
+    color: #5f6572;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.actions-cell {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid #eceef0;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.icon-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+}
+
+.icon-btn.edit {
+    color: #1e6ad6;
+}
+
+.icon-btn.edit.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+@media (max-width: 1240px) {
+    .row {
+        min-width: 520px;
+    }
+}

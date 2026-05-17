@@ -292,7 +292,6 @@ const filteredUsers = computed(() => {
 
 - CRUD de **Departamentos (roles)** (fase futura)
 - CRUD de **Pratos** (fase futura)
-- Persistência real de `update` e `syncDepartments`
 - Paginação server-side de usuários
 - Upload de foto/avatar do usuário
 
@@ -312,3 +311,5 @@ const filteredUsers = computed(() => {
 - [x] `Admin\\UsersController@index` retornando dados reais do banco
 - [x] `Admin\\UsersController@store` criando usuário no Firebase + tabela `users`
 - [x] `Admin\\UsersController@destroy` com soft delete + disable no Firebase
+- [x] `Admin\\UsersController@update` atualizando Firebase + tabela `users` (nome, e-mail, senha opcional)
+- [x] `UserEditPanel.vue` — modal de edição reutilizando `AdminModal.css`

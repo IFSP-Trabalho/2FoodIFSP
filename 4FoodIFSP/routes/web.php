@@ -27,6 +27,7 @@ Route::middleware('firebase.auth')->group(function () {
             Route::prefix('cadastros')->name('cadastros.')->group(function () {
                 Route::get('/users', [UsersController::class, 'index'])->name('users.index');
                 Route::get('/departments', [UsersController::class, 'departments'])->name('departments.index');
+                Route::put('/departments/{department}', [UsersController::class, 'updateDepartmentColor'])->name('departments.updateColor');
                 Route::get('/dishes', [UsersController::class, 'dishes'])->name('dishes.index');
                 Route::post('/users', [UsersController::class, 'store'])->name('users.store');
                 Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');

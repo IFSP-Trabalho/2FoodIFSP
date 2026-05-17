@@ -10,8 +10,8 @@ const emit = defineEmits(['select']);
 
 const items = [
     { key: 'users', label: 'Usuarios', available: true },
-    { key: 'departments', label: 'Departamentos', available: false },
-    { key: 'dishes', label: 'Pratos', available: false },
+    { key: 'departments', label: 'Departamentos', available: true },
+    { key: 'dishes', label: 'Pratos', available: true },
 ];
 
 function onSelect(item) {

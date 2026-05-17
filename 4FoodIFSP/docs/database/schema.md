@@ -38,6 +38,7 @@ Schema::create('departments', function (Blueprint $table) {
     $table->string('id')->primary();      // Str::uuid() gerado manualmente no seeder
     $table->string('name');               // "Cozinha", "Financeiro", "Admin", "Garçom"
     $table->string('slug')->unique();     // "kitchen", "finance", "admin", "waiter"
+    $table->string('color', 7);           // hex "#RRGGBB" — editável pelo admin
     $table->timestamps();
 });
 ```

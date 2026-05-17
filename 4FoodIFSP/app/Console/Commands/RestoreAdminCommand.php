@@ -94,6 +94,12 @@ class RestoreAdminCommand extends Command
             return;
         }
 
+        // Admin recriado no Firebase ganha novo UID; remove linha antiga com o mesmo e-mail.
+        DB::table('users')
+            ->where('email', $email)
+            ->where('id', '!=', $uid)
+            ->delete();
+
         DB::table('users')->updateOrInsert(
             ['id' => $uid],
             [

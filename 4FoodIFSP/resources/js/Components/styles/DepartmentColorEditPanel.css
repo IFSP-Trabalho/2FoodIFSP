@@ -1,0 +1,36 @@
+.admin-modal-color-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 18px;
+    padding-bottom: 10px;
+}
+
+.admin-modal-color-field input[type="color"] {
+    width: 48px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid #d9dde3;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.admin-modal-color-field input[type="color"]:focus {
+    outline: none;
+    border-color: #993c1d;
+}
+
+.color-preview-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgb(0 0 0 / 8%);
+    flex-shrink: 0;
+}
+
+.color-preview-hex {
+    font-size: 13px;
+    color: #5f6572;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}

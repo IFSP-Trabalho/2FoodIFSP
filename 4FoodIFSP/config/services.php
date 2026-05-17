@@ -37,6 +37,8 @@ return [
 
     'firebase' => [
         'web_api_key' => env('FIREBASE_WEB_API_KEY'),
+        'credentials' => env('FIREBASE_CREDENTIALS'),
+        'project_id' => env('VITE_FIREBASE_PROJECT_ID'),
     ],
 
 ];

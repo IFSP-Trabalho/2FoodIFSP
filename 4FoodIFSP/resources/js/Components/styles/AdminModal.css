@@ -1,0 +1,209 @@
+.admin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgb(20 26 35 / 52%);
+}
+
+.admin-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 51;
+    width: min(500px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    overflow: visible;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #eceef0;
+    border-radius: 4px;
+    box-shadow: 0 12px 32px rgba(23, 24, 30, 0.12);
+    padding: 24px 28px 22px;
+    color: #1f242e;
+    font-family: inherit;
+}
+
+.admin-modal-head {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eceef0;
+}
+
+.admin-modal-head h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #17181e;
+}
+
+.admin-modal-head p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: #7b7f89;
+}
+
+.admin-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow: visible;
+}
+
+.admin-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    overflow: visible;
+}
+
+.admin-modal-input-wrap {
+    position: relative;
+    min-height: 46px;
+    border: 1px solid #d9dde3;
+    border-radius: 4px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    transition: border-color 0.15s ease;
+}
+
+.admin-modal-input-wrap:focus-within {
+    border-color: #993c1d;
+}
+
+.admin-modal-input-wrap input {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    outline: 0;
+    font-size: 13px;
+    color: #1f242e;
+    padding: 11px 0;
+}
+
+.admin-modal-input-wrap input::placeholder {
+    color: #9aa1ad;
+}
+
+.admin-modal-floating-label {
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    padding: 0 4px;
+    background: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    color: #993c1d;
+    letter-spacing: 0.02em;
+    z-index: 1;
+}
+
+.admin-modal-password {
+    padding-right: 38px;
+}
+
+.admin-modal-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    border: 0;
+    background: transparent;
+    color: #7b7f89;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.admin-modal-password-toggle:hover {
+    color: #1f242e;
+}
+
+.admin-modal-password-toggle svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.admin-modal-field small {
+    color: #c53030;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.admin-modal-field small.admin-modal-hint {
+    color: #7b7f89;
+    font-weight: 400;
+}
+
+.admin-modal-error,
+.admin-modal-warning {
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #fed7d7;
+    background: #fff5f5;
+    color: #c53030;
+    font-size: 12px;
+}
+
+.admin-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #eceef0;
+}
+
+.admin-modal-actions button {
+    min-width: 96px;
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.admin-modal-actions .secondary {
+    border: 1px solid #d9dde3;
+    background: #fff;
+    color: #1f242e;
+}
+
+.admin-modal-actions .secondary:hover:not(:disabled) {
+    background: #f6f7f9;
+}
+
+.admin-modal-actions .primary {
+    border: 0;
+    background: #993c1d;
+    color: #fff;
+}
+
+.admin-modal-actions .primary:hover:not(:disabled) {
+    background: #7f3218;
+}
+
+.admin-modal-actions button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+@media (max-width: 480px) {
+    .admin-modal {
+        width: min(100%, calc(100vw - 20px));
+        padding: 18px 16px 16px;
+    }
+}

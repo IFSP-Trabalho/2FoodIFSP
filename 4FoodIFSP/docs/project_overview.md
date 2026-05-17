@@ -31,6 +31,27 @@ O produto é concebido como um SaaS, permitindo que restaurantes contratem módu
 
 ---
 
+## 2.2 Infraestrutura e Containers (Docker)
+
+Para padronizar execução e reduzir setup manual, o projeto usa Docker Compose como camada operacional padrão para os serviços de suporte (principalmente banco e ferramentas auxiliares). Em produção, a orientação é manter o mesmo fluxo operacional com variações apenas de credenciais, rede e hardening.
+
+**Diretrizes de contexto:**
+
+- O Docker não substitui as regras de domínio do sistema; ele padroniza runtime, ports, volumes e dependências de infraestrutura.
+- Credenciais e segredos devem vir de variáveis de ambiente (`.env` / secret manager), nunca hardcoded em arquivos versionados.
+- Operação de ambiente deve seguir um playbook único e reproduzível, com checklist de validação pós-subida.
+
+**Comandos operacionais de referência:**
+
+- `docker compose -f docker/docker-compose.yml up -d` — sobe serviços em background
+- `docker compose -f docker/docker-compose.yml ps` — valida estado dos containers
+- `docker compose -f docker/docker-compose.yml logs -f` — acompanha logs
+- `docker compose -f docker/docker-compose.yml down` — derruba stack
+
+Playbook oficial de operação: [`docs/deployment/docker-production.md`](deployment/docker-production.md).
+
+---
+
 ## 2.1 Padrão de estilos frontend (obrigatório)
 
 - Não manter CSS inline dentro de arquivos `.vue` (evitar blocos `<style> ... </style>` com regras escritas no componente).
