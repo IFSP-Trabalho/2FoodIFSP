@@ -30,6 +30,8 @@ Route::middleware('firebase.auth')->group(function () {
                 Route::put('/departments/{department}', [UsersController::class, 'updateDepartmentColor'])->name('departments.updateColor');
                 Route::get('/dishes', [UsersController::class, 'dishes'])->name('dishes.index');
                 Route::post('/dishes', [UsersController::class, 'storeDish'])->name('dishes.store');
+                Route::put('/dishes/{dish}', [UsersController::class, 'updateDish'])->name('dishes.update');
+                Route::delete('/dishes/{dish}', [UsersController::class, 'destroyDish'])->name('dishes.destroy');
                 Route::post('/users', [UsersController::class, 'store'])->name('users.store');
                 Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
                 Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');

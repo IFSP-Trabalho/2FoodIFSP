@@ -87,6 +87,85 @@ class UsersController extends Controller
             ->with('success', 'Prato cadastrado com sucesso.');
     }
 
+    public function updateDish(Request $request, string $dish): RedirectResponse
+    {
+        $existing = DB::table('dishes')->where('id', $dish)->first();
+
+        if ($existing === null) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'price' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
+            'category_id' => ['required', 'uuid', 'exists:dish_categories,id'],
+            'active' => ['boolean'],
+            'photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
+        ], [
+            'name.required' => 'Informe o nome do prato.',
+            'price.required' => 'Informe um preço válido.',
+            'category_id.required' => 'Selecione uma categoria.',
+            'photo.image' => 'A foto deve ser JPG, PNG ou WebP (máx. 2 MB).',
+        ]);
+
+        $photoPath = $existing->photo_path;
+
+        if ($request->hasFile('photo')) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+            $photoPath = $request->file('photo')->store('dishes', 'public');
+        }
+
+        DB::table('dishes')
+            ->where('id', $dish)
+            ->update([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'price' => $validated['price'],
+                'photo_path' => $photoPath,
+                'category_id' => $validated['category_id'],
+                'active' => $request->boolean('active'),
+                'updated_at' => now(),
+            ]);
+
+        return redirect()
+            ->route('admin.cadastros.dishes.index')
+            ->with('success', 'Prato atualizado com sucesso.');
+    }
+
+    public function destroyDish(string $dish): RedirectResponse
+    {
+        $existing = DB::table('dishes')->where('id', $dish)->first();
+
+        if ($existing === null) {
+            abort(404);
+        }
+
+        $hasOrders = DB::table('order_items')
+            ->where('dish_id', $dish)
+            ->exists();
+
+        if ($hasOrders) {
+            return redirect()
+                ->route('admin.cadastros.dishes.index')
+                ->withErrors([
+                    'delete' => 'Este prato nao pode ser excluido porque ja foi usado em pedidos.',
+                ]);
+        }
+
+        if ($existing->photo_path) {
+            Storage::disk('public')->delete($existing->photo_path);
+        }
+
+        DB::table('dishes')->where('id', $dish)->delete();
+
+        return redirect()
+            ->route('admin.cadastros.dishes.index')
+            ->with('success', 'Prato excluido com sucesso.');
+    }
+
     public function updateDepartmentColor(Request $request, string $department): RedirectResponse
     {
         $validated = $request->validate([
@@ -343,6 +422,7 @@ class UsersController extends Controller
             ->get([
                 'dishes.id',
                 'dishes.name',
+                'dishes.description',
                 'dishes.price',
                 'dishes.photo_path',
                 'dishes.category_id',
@@ -357,7 +437,9 @@ class UsersController extends Controller
                 return [
                     'id' => (string) $dish->id,
                     'name' => (string) $dish->name,
+                    'description' => $dish->description !== null ? (string) $dish->description : '',
                     'price' => (float) $dish->price,
+                    'photo_path' => $dish->photo_path !== null ? (string) $dish->photo_path : null,
                     'photo_url' => $photoUrl,
                     'category_id' => (string) $dish->category_id,
                     'category_name' => (string) $dish->category_name,

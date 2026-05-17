@@ -45,7 +45,8 @@
 .inactive-badge {
     position: absolute;
     top: 8px;
-    right: 8px;
+    left: 8px;
+    z-index: 2;
     background: #fff;
     border: 1px solid #eceef0;
     border-radius: 999px;
@@ -53,6 +54,83 @@
     font-size: 11px;
     font-weight: 600;
     padding: 2px 8px;
+}
+
+.dish-card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 3;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.dish-card:hover .dish-card-actions,
+.dish-card.is-actions-open .dish-card-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dish-card-actions-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #eceef0;
+    border-radius: 8px;
+    background: #fff;
+    color: #17181e;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+    padding: 0;
+}
+
+.dish-card-actions-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+.dish-card-actions-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 140px;
+    background: #fff;
+    border: 1px solid #eceef0;
+    border-radius: 10px;
+    padding: 4px 0;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 10%);
+}
+
+.dish-card-actions-item {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #17181e;
+    cursor: pointer;
+}
+
+.dish-card-actions-item:hover {
+    background: #f6f7f9;
+}
+
+.dish-card-actions-item.danger {
+    color: #c53030;
+}
+
+@media (hover: none) {
+    .dish-card-actions {
+        opacity: 0.85;
+        pointer-events: auto;
+    }
 }
 
 .dish-body {

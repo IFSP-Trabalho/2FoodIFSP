@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted, onUnmounted, ref } from 'vue';
 import { formatPriceBRL } from '../utils/formatPrice';
 
 const props = defineProps({
@@ -7,10 +8,73 @@ const props = defineProps({
         required: true,
     },
 });
+
+const emit = defineEmits(['edit', 'delete']);
+
+const isMenuOpen = ref(false);
+const actionsRef = ref(null);
+
+function openMenu() {
+    isMenuOpen.value = true;
+}
+
+function closeMenu() {
+    isMenuOpen.value = false;
+}
+
+function toggleMenu() {
+    if (isMenuOpen.value) {
+        closeMenu();
+        return;
+    }
+
+    openMenu();
+}
+
+function onEdit() {
+    closeMenu();
+    emit('edit', props.dish);
+}
+
+function onDelete() {
+    closeMenu();
+    emit('delete', props.dish);
+}
+
+function onDocumentClick(event) {
+    if (!isMenuOpen.value) {
+        return;
+    }
+
+    const root = actionsRef.value;
+
+    if (root && !root.contains(event.target)) {
+        closeMenu();
+    }
+}
+
+function onKeydown(event) {
+    if (event.key === 'Escape' && isMenuOpen.value) {
+        closeMenu();
+    }
+}
+
+onMounted(() => {
+    document.addEventListener('click', onDocumentClick);
+    document.addEventListener('keydown', onKeydown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', onDocumentClick);
+    document.removeEventListener('keydown', onKeydown);
+});
 </script>
 
 <template>
-    <article class="dish-card" :class="{ inactive: !props.dish.active }">
+    <article
+        class="dish-card"
+        :class="{ inactive: !props.dish.active, 'is-actions-open': isMenuOpen }"
+    >
         <div class="dish-photo-wrap">
             <img
                 v-if="props.dish.photo_url"
@@ -24,6 +88,46 @@ const props = defineProps({
                 </svg>
             </div>
             <span v-if="!props.dish.active" class="inactive-badge">Inativo</span>
+
+            <div ref="actionsRef" class="dish-card-actions">
+                <button
+                    type="button"
+                    class="dish-card-actions-btn"
+                    aria-label="Acoes do prato"
+                    :aria-expanded="isMenuOpen ? 'true' : 'false'"
+                    aria-haspopup="menu"
+                    @click.stop="toggleMenu"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="5" r="1.5" />
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="12" cy="19" r="1.5" />
+                    </svg>
+                </button>
+
+                <div
+                    v-if="isMenuOpen"
+                    class="dish-card-actions-menu"
+                    role="menu"
+                >
+                    <button
+                        type="button"
+                        class="dish-card-actions-item"
+                        role="menuitem"
+                        @click="onEdit"
+                    >
+                        Editar
+                    </button>
+                    <button
+                        type="button"
+                        class="dish-card-actions-item danger"
+                        role="menuitem"
+                        @click="onDelete"
+                    >
+                        Apagar
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="dish-body">

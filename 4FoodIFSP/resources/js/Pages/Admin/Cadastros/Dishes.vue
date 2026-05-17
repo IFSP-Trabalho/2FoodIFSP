@@ -1,5 +1,5 @@
 <script setup>
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppSidebar from '../../../Components/AppSidebar.vue';
 import DishCard from '../../../Components/DishCard.vue';
@@ -20,8 +20,12 @@ const props = defineProps({
 const page = usePage();
 const selectedCategoryId = ref(null);
 const isCreatePanelOpen = ref(false);
+const editingDish = ref(null);
+const pendingDeleteDish = ref(null);
+const isDeleting = ref(false);
 
 const flashSuccess = computed(() => page.props.flash?.success ?? '');
+const deleteError = computed(() => page.props.errors?.delete ?? '');
 
 const filteredDishes = computed(() => {
     const list = selectedCategoryId.value === null
@@ -54,11 +58,45 @@ function selectCategory(categoryId) {
 }
 
 function openCreatePanel() {
+    editingDish.value = null;
     isCreatePanelOpen.value = true;
 }
 
 function closeCreatePanel() {
     isCreatePanelOpen.value = false;
+}
+
+function handleEditDish(dish) {
+    isCreatePanelOpen.value = false;
+    editingDish.value = dish;
+}
+
+function closeEditPanel() {
+    editingDish.value = null;
+}
+
+function handleDeleteDish(dish) {
+    pendingDeleteDish.value = dish;
+}
+
+function cancelDelete() {
+    pendingDeleteDish.value = null;
+}
+
+function confirmDelete() {
+    if (!pendingDeleteDish.value || isDeleting.value) {
+        return;
+    }
+
+    isDeleting.value = true;
+
+    router.delete(`/admin/cadastros/dishes/${pendingDeleteDish.value.id}`, {
+        preserveScroll: true,
+        onFinish: () => {
+            isDeleting.value = false;
+            pendingDeleteDish.value = null;
+        },
+    });
 }
 </script>
 
@@ -91,6 +129,9 @@ function closeCreatePanel() {
             <div class="content">
                 <p v-if="flashSuccess" class="feedback success">
                     {{ flashSuccess }}
+                </p>
+                <p v-if="deleteError" class="feedback error">
+                    {{ deleteError }}
                 </p>
 
                 <section class="category-strip" aria-label="Menus">
@@ -132,6 +173,8 @@ function closeCreatePanel() {
                             v-for="dish in filteredDishes"
                             :key="dish.id"
                             :dish="dish"
+                            @edit="handleEditDish"
+                            @delete="handleDeleteDish"
                         />
                     </div>
                 </section>
@@ -144,6 +187,37 @@ function closeCreatePanel() {
             :initial-category-id="selectedCategoryId"
             @close="closeCreatePanel"
         />
+
+        <DishCreatePanel
+            v-if="editingDish"
+            mode="edit"
+            :dish="editingDish"
+            :categories="props.categories"
+            @close="closeEditPanel"
+        />
+
+        <div v-if="pendingDeleteDish" class="confirm-delete-overlay" @click.self="cancelDelete">
+            <div class="confirm-delete-dialog">
+                <div class="confirm-delete-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M8 4h8l1 2h4v2H3V6h4l1-2Zm1 6h2v8H9v-8Zm4 0h2v8h-2v-8ZM6 8h12l-1 12H7L6 8Z" />
+                    </svg>
+                </div>
+                <h3>Excluir prato</h3>
+                <p>
+                    Deseja excluir <strong>{{ pendingDeleteDish.name }}</strong>?
+                    Esta acao nao pode ser desfeita.
+                </p>
+                <footer class="confirm-delete-actions">
+                    <button type="button" class="secondary" :disabled="isDeleting" @click="cancelDelete">
+                        Cancelar
+                    </button>
+                    <button type="button" class="danger" :disabled="isDeleting" @click="confirmDelete">
+                        {{ isDeleting ? 'Excluindo...' : 'Excluir' }}
+                    </button>
+                </footer>
+            </div>
+        </div>
     </div>
 </template>
 
