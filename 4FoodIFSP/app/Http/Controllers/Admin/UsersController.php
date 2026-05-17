@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -45,6 +46,45 @@ class UsersController extends Controller
             'categories' => $this->getDishCategories(),
             'dishes' => $this->getDishes(),
         ]);
+    }
+
+    public function storeDish(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:5000'],
+            'price' => ['required', 'numeric', 'min:0.01', 'max:999999.99'],
+            'category_id' => ['required', 'uuid', 'exists:dish_categories,id'],
+            'active' => ['boolean'],
+            'photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
+        ], [
+            'name.required' => 'Informe o nome do prato.',
+            'price.required' => 'Informe um preço válido.',
+            'price.min' => 'O preço deve ser maior que zero.',
+            'category_id.required' => 'Selecione uma categoria.',
+            'photo.image' => 'A foto deve ser JPG, PNG ou WebP (máx. 2 MB).',
+        ]);
+
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('dishes', 'public');
+        }
+
+        DB::table('dishes')->insert([
+            'id' => Str::uuid()->toString(),
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'price' => $validated['price'],
+            'photo_path' => $photoPath,
+            'category_id' => $validated['category_id'],
+            'active' => $request->boolean('active'),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()
+            ->route('admin.cadastros.dishes.index')
+            ->with('success', 'Prato cadastrado com sucesso.');
     }
 
     public function updateDepartmentColor(Request $request, string $department): RedirectResponse
@@ -311,7 +351,7 @@ class UsersController extends Controller
             ])
             ->map(function (object $dish): array {
                 $photoUrl = $dish->photo_path
-                    ? Storage::url((string) $dish->photo_path)
+                    ? '/storage/'.ltrim(str_replace('\\', '/', (string) $dish->photo_path), '/')
                     : null;
 
                 return [

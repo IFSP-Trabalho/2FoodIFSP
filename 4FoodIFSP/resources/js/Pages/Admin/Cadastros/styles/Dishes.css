@@ -54,8 +54,11 @@
     color: #fff;
     font-size: 13px;
     font-weight: 600;
-    opacity: 0.5;
-    pointer-events: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #7e3118;
 }
 
 .content {
@@ -63,6 +66,20 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.feedback {
+    margin: 0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.feedback.success {
+    border: 1px solid #b8dfc4;
+    background: #ecf8f0;
+    color: #256f3d;
 }
 
 .category-strip {

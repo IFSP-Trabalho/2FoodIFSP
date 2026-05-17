@@ -1,8 +1,10 @@
 <script setup>
+import { usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppSidebar from '../../../Components/AppSidebar.vue';
 import DishCard from '../../../Components/DishCard.vue';
 import DishCategoryChip from '../../../Components/DishCategoryChip.vue';
+import DishCreatePanel from '../../../Components/DishCreatePanel.vue';
 
 const props = defineProps({
     categories: {
@@ -15,7 +17,11 @@ const props = defineProps({
     },
 });
 
+const page = usePage();
 const selectedCategoryId = ref(null);
+const isCreatePanelOpen = ref(false);
+
+const flashSuccess = computed(() => page.props.flash?.success ?? '');
 
 const filteredDishes = computed(() => {
     const list = selectedCategoryId.value === null
@@ -46,6 +52,14 @@ const emptyMessage = computed(() => {
 function selectCategory(categoryId) {
     selectedCategoryId.value = categoryId;
 }
+
+function openCreatePanel() {
+    isCreatePanelOpen.value = true;
+}
+
+function closeCreatePanel() {
+    isCreatePanelOpen.value = false;
+}
 </script>
 
 <template>
@@ -66,9 +80,8 @@ function selectCategory(categoryId) {
                     <button
                         type="button"
                         class="btn-primary"
-                        disabled
-                        aria-disabled="true"
-                        title="Criar prato (em breve)"
+                        title="Cadastrar novo prato"
+                        @click="openCreatePanel"
                     >
                         Criar prato
                     </button>
@@ -76,6 +89,10 @@ function selectCategory(categoryId) {
             </header>
 
             <div class="content">
+                <p v-if="flashSuccess" class="feedback success">
+                    {{ flashSuccess }}
+                </p>
+
                 <section class="category-strip" aria-label="Menus">
                     <button
                         type="button"
@@ -120,6 +137,13 @@ function selectCategory(categoryId) {
                 </section>
             </div>
         </div>
+
+        <DishCreatePanel
+            v-if="isCreatePanelOpen"
+            :categories="props.categories"
+            :initial-category-id="selectedCategoryId"
+            @close="closeCreatePanel"
+        />
     </div>
 </template>
 
