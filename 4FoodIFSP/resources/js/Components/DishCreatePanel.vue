@@ -346,7 +346,7 @@ onUnmounted(() => {
                 <span>Prato ativo</span>
             </label>
             <p class="admin-modal-hint">
-                Inativos nao aparecem no tablet (em breve).
+                Inativos nao aparecem no tablet.
             </p>
             </div>
 

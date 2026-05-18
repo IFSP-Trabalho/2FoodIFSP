@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ResolvesTabletMenu;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\FirebaseUserProvisioningService;
@@ -19,6 +20,8 @@ use Throwable;
 
 class UsersController extends Controller
 {
+    use ResolvesTabletMenu;
+
     public function __construct(
         private readonly FirebaseUserProvisioningService $firebaseUserProvisioningService,
         private readonly UserCreationLimitService $userCreationLimitService
@@ -386,64 +389,6 @@ class UsersController extends Controller
                     'department_slug' => $departmentSlug,
                     'departments' => [$departmentLabel],
                     'is_root_admin' => $rootAdminUid !== '' && (string) $user->id === $rootAdminUid,
-                ];
-            })
-            ->values()
-            ->all();
-    }
-
-    private function getDishCategories(): array
-    {
-        return DB::table('dish_categories')
-            ->orderBy('name')
-            ->get(['id', 'name', 'slug'])
-            ->map(function (object $category): array {
-                $activeCount = DB::table('dishes')
-                    ->where('category_id', $category->id)
-                    ->where('active', true)
-                    ->count();
-
-                return [
-                    'id' => (string) $category->id,
-                    'name' => (string) $category->name,
-                    'slug' => (string) $category->slug,
-                    'dishes_count' => $activeCount,
-                ];
-            })
-            ->values()
-            ->all();
-    }
-
-    private function getDishes(): array
-    {
-        return DB::table('dishes')
-            ->join('dish_categories', 'dishes.category_id', '=', 'dish_categories.id')
-            ->orderBy('dishes.name')
-            ->get([
-                'dishes.id',
-                'dishes.name',
-                'dishes.description',
-                'dishes.price',
-                'dishes.photo_path',
-                'dishes.category_id',
-                'dishes.active',
-                'dish_categories.name as category_name',
-            ])
-            ->map(function (object $dish): array {
-                $photoUrl = $dish->photo_path
-                    ? '/storage/'.ltrim(str_replace('\\', '/', (string) $dish->photo_path), '/')
-                    : null;
-
-                return [
-                    'id' => (string) $dish->id,
-                    'name' => (string) $dish->name,
-                    'description' => $dish->description !== null ? (string) $dish->description : '',
-                    'price' => (float) $dish->price,
-                    'photo_path' => $dish->photo_path !== null ? (string) $dish->photo_path : null,
-                    'photo_url' => $photoUrl,
-                    'category_id' => (string) $dish->category_id,
-                    'category_name' => (string) $dish->category_name,
-                    'active' => (bool) $dish->active,
                 ];
             })
             ->values()

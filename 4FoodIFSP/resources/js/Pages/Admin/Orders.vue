@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import axios from 'axios';
 import { router } from '@inertiajs/vue3';
 import AppSidebar from '../../Components/AppSidebar.vue';
 import AppTopbar from '../../Components/AppTopbar.vue';
@@ -33,14 +34,26 @@ const dateFrom = ref(props.filters.date_from);
 const dateTo = ref(props.filters.date_to);
 const statusKeys = ['pending', 'in_progress', 'ready'];
 const localOrders = ref(cloneOrders(props.orders));
-const dragState = ref({ orderId: null, fromStatus: null });
+const dragState = ref({ orderUuid: null, fromStatus: null });
 const dragOverStatus = ref(null);
+
+const soundEnabled = ref(localStorage.getItem('4food_orders_sound') === '1');
+const knownPendingIds = new Set();
+let pollInitialized = false;
+let pollingInterval = null;
 
 watch(
     () => props.filters,
     (nextFilters) => {
         dateFrom.value = nextFilters.date_from;
         dateTo.value = nextFilters.date_to;
+    }
+);
+
+watch(
+    () => props.orders,
+    (nextOrders) => {
+        localOrders.value = cloneOrders(nextOrders);
     }
 );
 
@@ -68,21 +81,21 @@ const pendente = computed(() => filterBySearch(localOrders.value.pending ?? []))
 const preparando = computed(() => filterBySearch(localOrders.value.in_progress ?? []));
 const finalizados = computed(() => filterBySearch(localOrders.value.ready ?? []));
 
-function persistStatus(orderId, status) {
-    router.patch(`/admin/orders/${orderId}/status`, { status }, {
+function persistStatus(orderUuid, status) {
+    router.patch(`/admin/orders/${orderUuid}/status`, { status }, {
         preserveState: true,
         preserveScroll: true,
     });
 }
 
-function moveOrder(orderId, fromStatus, toStatus) {
+function moveOrder(orderUuid, fromStatus, toStatus) {
     if (fromStatus === toStatus) {
         return false;
     }
 
     const sourceList = localOrders.value[fromStatus] ?? [];
     const targetList = localOrders.value[toStatus] ?? [];
-    const sourceIndex = sourceList.findIndex((order) => order.id === orderId);
+    const sourceIndex = sourceList.findIndex((order) => order.uuid === orderUuid);
 
     if (sourceIndex === -1) {
         return false;
@@ -94,17 +107,17 @@ function moveOrder(orderId, fromStatus, toStatus) {
     return true;
 }
 
-function advanceStatus(orderId, currentStatus) {
+function advanceStatus(orderUuid, currentStatus) {
     if (currentStatus === 'pending') {
-        if (moveOrder(orderId, 'pending', 'in_progress')) {
-            persistStatus(orderId, 'in_progress');
+        if (moveOrder(orderUuid, 'pending', 'in_progress')) {
+            persistStatus(orderUuid, 'in_progress');
         }
         return;
     }
 
     if (currentStatus === 'in_progress') {
-        if (moveOrder(orderId, 'in_progress', 'ready')) {
-            persistStatus(orderId, 'ready');
+        if (moveOrder(orderUuid, 'in_progress', 'ready')) {
+            persistStatus(orderUuid, 'ready');
         }
     }
 }
@@ -113,14 +126,14 @@ function canDropOn(status) {
     return status !== 'ready';
 }
 
-function onDragStart(orderId, fromStatus, event) {
-    dragState.value = { orderId, fromStatus };
+function onDragStart(orderUuid, fromStatus, event) {
+    dragState.value = { orderUuid, fromStatus };
     event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', orderId);
+    event.dataTransfer.setData('text/plain', orderUuid);
 }
 
 function onDragEnd() {
-    dragState.value = { orderId: null, fromStatus: null };
+    dragState.value = { orderUuid: null, fromStatus: null };
     dragOverStatus.value = null;
 }
 
@@ -146,13 +159,13 @@ function onColumnDrop(status, event) {
 
     event.preventDefault();
 
-    const { orderId, fromStatus } = dragState.value;
-    if (!orderId || !fromStatus) {
+    const { orderUuid, fromStatus } = dragState.value;
+    if (!orderUuid || !fromStatus) {
         return;
     }
 
-    if (moveOrder(orderId, fromStatus, status)) {
-        persistStatus(orderId, status);
+    if (moveOrder(orderUuid, fromStatus, status)) {
+        persistStatus(orderUuid, status);
     }
 
     onDragEnd();
@@ -175,6 +188,89 @@ function statusLabel(status) {
 
     return 'Cancelado';
 }
+
+// ── Bell / sound ──
+
+function toggleSound() {
+    soundEnabled.value = !soundEnabled.value;
+    localStorage.setItem('4food_orders_sound', soundEnabled.value ? '1' : '0');
+
+    if (soundEnabled.value && !pollInitialized) {
+        pollOnce();
+    }
+}
+
+async function playNewOrderSound() {
+    try {
+        const audio = new Audio('/sounds/new-order.mp3');
+        await audio.play();
+    } catch {
+        // NotAllowedError or missing file — ignore silently
+    }
+}
+
+// ── Polling ──
+
+async function pollOnce() {
+    try {
+        const { data } = await axios.get('/admin/orders/poll');
+        const pendingIds = data.pending_ids ?? [];
+
+        if (!pollInitialized) {
+            pendingIds.forEach((id) => knownPendingIds.add(id));
+            pollInitialized = true;
+            return;
+        }
+
+        const newIds = pendingIds.filter((id) => !knownPendingIds.has(id));
+
+        if (newIds.length > 0) {
+            newIds.forEach((id) => knownPendingIds.add(id));
+            if (soundEnabled.value) {
+                await playNewOrderSound();
+            }
+            router.reload({ only: ['orders'], preserveScroll: true });
+        }
+    } catch {
+        // network error — ignore
+    }
+}
+
+function startPolling() {
+    if (pollingInterval !== null) return;
+    pollingInterval = setInterval(pollOnce, 8000);
+    if (!pollInitialized) {
+        pollOnce();
+    }
+}
+
+function stopPolling() {
+    if (pollingInterval !== null) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+function syncPollingState() {
+    const shouldPoll = activeTab.value === 'live' && document.visibilityState === 'visible';
+    if (shouldPoll) {
+        startPolling();
+    } else {
+        stopPolling();
+    }
+}
+
+watch(activeTab, syncPollingState);
+
+onMounted(() => {
+    document.addEventListener('visibilitychange', syncPollingState);
+    syncPollingState();
+});
+
+onUnmounted(() => {
+    document.removeEventListener('visibilitychange', syncPollingState);
+    stopPolling();
+});
 </script>
 
 <template>
@@ -209,7 +305,15 @@ function statusLabel(status) {
                             placeholder="Pesquisar Prato"
                             class="search-input"
                         >
-                        <button type="button" class="bell-btn" disabled aria-label="Notificacoes">
+                        <button
+                            type="button"
+                            class="bell-btn"
+                            :class="soundEnabled ? 'bell-btn--on' : 'bell-btn--off'"
+                            :aria-pressed="soundEnabled"
+                            :aria-label="soundEnabled ? 'Desativar notificações sonoras' : 'Ativar notificações sonoras'"
+                            :title="soundEnabled ? 'Notificações ativadas' : 'Notificações desativadas'"
+                            @click="toggleSound"
+                        >
                             <svg viewBox="0 0 24 24" aria-hidden="true">
                                 <path d="M12 3a6 6 0 0 0-6 6v3.6L4.4 16a1 1 0 0 0 .8 1.6h13.6a1 1 0 0 0 .8-1.6L18 12.6V9a6 6 0 0 0-6-6Zm0 19a3 3 0 0 0 2.82-2h-5.64A3 3 0 0 0 12 22Z" />
                             </svg>
@@ -231,16 +335,16 @@ function statusLabel(status) {
                         </div>
                         <div
                             v-for="order in pendente"
-                            :key="order.id"
+                            :key="order.uuid"
                             class="order-drag-wrapper"
                             draggable="true"
-                            @dragstart="onDragStart(order.id, 'pending', $event)"
+                            @dragstart="onDragStart(order.uuid, 'pending', $event)"
                             @dragend="onDragEnd"
                         >
                             <OrderCard
                                 :order="order"
                                 status="pending"
-                                @advance="advanceStatus(order.id, 'pending')"
+                                @advance="advanceStatus(order.uuid, 'pending')"
                             />
                         </div>
                     </div>
@@ -258,16 +362,16 @@ function statusLabel(status) {
                         </div>
                         <div
                             v-for="order in preparando"
-                            :key="order.id"
+                            :key="order.uuid"
                             class="order-drag-wrapper"
                             draggable="true"
-                            @dragstart="onDragStart(order.id, 'in_progress', $event)"
+                            @dragstart="onDragStart(order.uuid, 'in_progress', $event)"
                             @dragend="onDragEnd"
                         >
                             <OrderCard
                                 :order="order"
                                 status="in_progress"
-                                @advance="advanceStatus(order.id, 'in_progress')"
+                                @advance="advanceStatus(order.uuid, 'in_progress')"
                             />
                         </div>
                     </div>
@@ -279,10 +383,10 @@ function statusLabel(status) {
                         </div>
                         <OrderCard
                             v-for="order in finalizados"
-                            :key="order.id"
+                            :key="order.uuid"
                             :order="order"
                             status="ready"
-                            @advance="advanceStatus(order.id, 'ready')"
+                            @advance="advanceStatus(order.uuid, 'ready')"
                         />
                     </div>
                 </div>
@@ -313,7 +417,7 @@ function statusLabel(status) {
                             </thead>
                             <tbody>
                                 <tr v-for="entry in props.history" :key="entry.id">
-                                    <td>#{{ entry.id }}</td>
+                                    <td>{{ entry.id }}</td>
                                     <td>{{ entry.mesa }}</td>
                                     <td>{{ entry.items.join(', ') }}</td>
                                     <td>

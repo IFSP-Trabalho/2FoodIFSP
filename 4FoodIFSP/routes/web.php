@@ -4,10 +4,14 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrdersController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Tablet\TabletOrderController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::redirect('/', '/login');
+
+Route::get('/tablet', [TabletOrderController::class, 'index'])->name('tablet.order');
+Route::post('/tablet/orders', [TabletOrderController::class, 'store'])->name('tablet.orders.store');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/auth/firebase', [AuthController::class, 'firebaseLogin'])->name('auth.firebase');
@@ -21,6 +25,7 @@ Route::middleware('firebase.auth')->group(function () {
         Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::get('/orders', [OrdersController::class, 'index'])->name('orders');
+            Route::get('/orders/poll', [OrdersController::class, 'poll'])->name('orders.poll');
             Route::get('/orders/history', [OrdersController::class, 'history'])->name('orders.history');
             Route::patch('/orders/{order}/status', [OrdersController::class, 'updateStatus'])->name('orders.updateStatus');
 

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Gabriel Henrique\\\\Desktop\\\\4Foods\\\\4FoodIFSP\\\\4FoodIFSP\\\\resources\\\\js\\\\Layouts\" -Recurse -Depth 1)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Gabriel Henrique\\\\Desktop\\\\4Foods\\\\4FoodIFSP\\\\4FoodIFSP\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(grep -E \"\\\\.\\(vue|js|css\\)$\")",
+      "Bash(npm run *)",
+      "Bash(node -e \"const p=require\\('./node_modules/@vitejs/plugin-vue/package.json'\\); console.log\\(p.version\\)\")",
+      "PowerShell(node -e \"const p=require\\('./node_modules/laravel-vite-plugin/package.json'\\); console.log\\(p.version\\)\" 2>&1)",
+      "PowerShell(node -e \"const p=require\\('./node_modules/vite/package.json'\\); console.log\\('vite:', p.version\\)\")",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Gabriel Henrique\\\\Desktop\\\\4Foods\\\\4FoodIFSP\\\\4FoodIFSP\\\\public\\\\sounds\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Host \"done\")",
+      "PowerShell(New-Item *)"
+    ]
+  }
+}

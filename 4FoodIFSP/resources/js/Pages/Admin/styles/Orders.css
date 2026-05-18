@@ -70,10 +70,21 @@
     border: 1px solid #eceef0;
     border-radius: 8px;
     background: #fff;
-    opacity: 0.5;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.bell-btn--off {
+    opacity: 0.5;
+}
+
+.bell-btn--on {
+    opacity: 1;
+    border-color: #E67E22;
+    background: #fff8f0;
 }
 
 .bell-btn svg {

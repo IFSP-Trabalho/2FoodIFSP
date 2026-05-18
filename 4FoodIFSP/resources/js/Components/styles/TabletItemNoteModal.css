@@ -1,0 +1,86 @@
+.note-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.note-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.note-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.note-textarea {
+    resize: none;
+    border: 1px solid #eceef0;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    color: #1a1a1a;
+    font-family: inherit;
+    outline: none;
+    line-height: 1.5;
+    background: #f9fafb;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.note-textarea:focus {
+    border-color: #1a1a1a;
+    background: #ffffff;
+}
+
+.note-counter {
+    font-size: 12px;
+    color: #9ca3af;
+    text-align: right;
+    margin-top: -8px;
+}
+
+.note-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.note-cancel {
+    flex: 1;
+    padding: 12px;
+    background: #f5f6f8;
+    border: 1px solid #eceef0;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+.note-save {
+    flex: 2;
+    padding: 12px;
+    background: #1a1a1a;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    min-height: 44px;
+}

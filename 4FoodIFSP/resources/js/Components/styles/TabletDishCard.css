@@ -1,0 +1,116 @@
+.tablet-dish-card {
+    background: #ffffff;
+    border: 1px solid #eceef0;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.tablet-dish-photo {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: #f0f1f3;
+}
+
+.tablet-dish-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tablet-dish-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tablet-dish-body {
+    padding: 12px 12px 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tablet-dish-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.tablet-dish-desc {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+.tablet-dish-price {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 4px 0 0;
+}
+
+.tablet-dish-cta {
+    padding: 8px 12px 12px;
+}
+
+.tablet-dish-add {
+    width: 100%;
+    padding: 10px;
+    background: #1a1a1a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+@media (hover: hover) {
+    .tablet-dish-add:hover {
+        background: #333333;
+    }
+}
+
+.tablet-dish-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f5f6f8;
+    border-radius: 8px;
+}
+
+.tablet-dish-stepper-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    font-weight: 500;
+    color: #1a1a1a;
+    cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.tablet-dish-stepper-qty {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    min-width: 28px;
+    text-align: center;
+}
